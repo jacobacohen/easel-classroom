@@ -1,0 +1,42 @@
+{% extends "header.html" %}
+{% block content %}
+<div class="row">
+    <div class="col">
+        {# Greeting #}
+        <h2>Welcome to your account page {{ current_user.username }}!</h2>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        {# Username Update username_form #}
+        <h2>Username Update Form</h2>
+        <form method="POST" action="">
+            {{ username_form.csrf_token }}
+            <div class="form-group">
+                {{ username_form.username.label }}
+                {{ username_form.username(class="username_form-control") }}
+
+                {% if username_form.username.errors %}
+                <div class="alert alert-warning" role="alert">
+                    {% for error in username_form.username.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {{ username_form.submit() }}
+        </form>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        {# EXTRA CREDIT #}
+        {# Profile Picture Update username_form #}
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        {# Link to see all of the current user's reviews. #}
+    </div>
+</div>
+{% endblock %}
