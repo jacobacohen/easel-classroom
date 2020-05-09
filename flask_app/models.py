@@ -8,9 +8,12 @@ def load_user(user_id):
 
 
 class User(db.Document, UserMixin):
+    fullname = db.StringField(required=True)
     username = db.StringField(unique=True, required=True)
     email = db.StringField(unique=True, required=True)
-    password = db.StringField()
+    password = db.StringField(required=True)
+    user_type = db.StringField(required=True)
+    classes = db.ListField()
     #profile_pic = 
     #.modify method to change data
 
@@ -18,10 +21,16 @@ class User(db.Document, UserMixin):
     def get_id(self):
         return self.username 
 
-class Review(db.Document):
-    # required reference to User
-    commenter = db.ReferenceField(User, required=True)
-    content = db.StringField(unique=True, required=True)
-    date = db.StringField(required=True)
-    imdb_id = db.StringField(required=True, min_length=9, max_length=9)
-    movie_title = db.StringField()
+# Overall classroom structure
+class Classroom(db.Document):
+    teacher = db.ReferenceField(User, required=True)
+    classname = db.StringField(unique=True, required=True, min_length=4, max_length=8)
+    classdescription = db.StringField()
+    #assignments = db.
+    #students = db.
+
+class Message(db.Document):
+    sender = db.ReferenceField(User, required=True)
+    reciever = db.ReferenceField(User, required=True)
+    classroom = db.ReferenceField(Classroom, required=True)
+    content = db.StringField(required=True, min_length=1, max_length=600)

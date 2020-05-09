@@ -2,24 +2,20 @@ from flask_login import current_user
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from werkzeug.utils import secure_filename
-from wtforms import StringField, IntegerField, SubmitField, TextAreaField, PasswordField
+from wtforms import StringField, IntegerField, SubmitField, TextAreaField, PasswordField, RadioField
 from wtforms.validators import (InputRequired, DataRequired, NumberRange, Length, Email, 
                                 EqualTo, ValidationError)
 
 
-from .models import User
+from ..models import User
 
-class SearchForm(FlaskForm):
-    search_query = StringField('Query', validators=[InputRequired(), Length(min=1, max=100)])
-    submit = SubmitField('Search')
 
-class MovieReviewForm(FlaskForm):
-    text = TextAreaField('Comment', validators=[InputRequired(), Length(min=1, max=500)])
-    submit = SubmitField('Enter Comment')
-
+# Registration Fields: Full Name, Email, Password, Student or Teacher selection
 class RegistrationForm(FlaskForm):
+    givenname = StringField('Given name', validators=[InputRequired(), Length(min=4, max=80)])
     username = StringField('Username', validators=[InputRequired(), Length(min=1, max=40)])
     email = StringField('Email', validators=[InputRequired(), Email()])
+    user_type = RadioField('Teacher or Student?', choices=[('Teacher', 'Teacher'), ('Student', 'Student')])
     password = PasswordField('Password', validators=[InputRequired()])
     confirm_password = PasswordField('Confirm Password', 
                                     validators=[InputRequired(), EqualTo('password')])
@@ -35,7 +31,6 @@ class RegistrationForm(FlaskForm):
         if user is not None:
             raise ValidationError('Email is taken')
 
-# TODO
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=1, max=40)])
     email = StringField('Email', validators=[InputRequired(), Length(min=1, max=40)])
@@ -51,5 +46,3 @@ class UpdateUsernameForm(FlaskForm):
         if existing_user is not None:
             raise ValidationError('Username is taken')
 
-class UpdateProfilePicForm(FlaskForm):
-    pass
