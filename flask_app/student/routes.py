@@ -2,6 +2,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
 from flask_mongoengine import MongoEngine
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
+#from flask_user import current_user, UserManager, login_required
 from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
 
@@ -12,7 +13,7 @@ from datetime import datetime
 from .. import app, bcrypt
 from .forms import * 
 from ..models import User, load_user
-from ..utils import current_time
+from ..utils import role_required, current_time
 
 student = Blueprint("student", __name__)
 
@@ -32,7 +33,7 @@ def user_detail(username):
 """ ************ User Management views ************ """
 
 @student.route('/account', methods=['GET', 'POST'])
-@login_required
+@role_required(role='Student')
 def account():
     username_update = UpdateUsernameForm()
     picture_update = UpdateProfilePicForm()
@@ -40,15 +41,22 @@ def account():
     if username_update.validate_on_submit():
         # perform username update
         new_username = username_update.username.data
-        #user = load_user(current_user.username), 
+        user = load_user(current_user.username), 
         user = User.objects(username=current_user.username).first()
 
         # check uniqueness
         user.modify(username=new_username)
         user.save()
-        return render_template('account.html', username_form=username_update, picture_form=picture_update)
+        return render_template('studnet-account.html', username_form=username_update, picture_form=picture_update)
 
     if picture_update.validate_on_submit():
-        return render_template('account.html', username_form=username_update, picture_form=picture_update)
+        return render_template('student-account.html', username_form=username_update, picture_form=picture_update)
 
-    return render_template('account.html', username_form=username_update, picture_form=picture_update)
+    return render_template('student-account.html', username_form=username_update, picture_form=picture_update)
+
+@student.route('/class-join', methods=['GET', 'POST'])
+@role_required(role='Student')
+def class_join():
+    # get list of open classes to join
+    return 'yeeter'
+

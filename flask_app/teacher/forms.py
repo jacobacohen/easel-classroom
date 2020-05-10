@@ -1,5 +1,6 @@
-from flask_login import current_user
 from flask_wtf import FlaskForm
+from flask_login import current_user
+#from flask_user import current_user
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from werkzeug.utils import secure_filename
 from wtforms import StringField, IntegerField, SubmitField, TextAreaField, PasswordField
@@ -13,9 +14,12 @@ class SearchForm(FlaskForm):
     search_query = StringField('Query', validators=[InputRequired(), Length(min=1, max=100)])
     submit = SubmitField('Search')
 
-class MovieReviewForm(FlaskForm):
-    text = TextAreaField('Comment', validators=[InputRequired(), Length(min=1, max=500)])
-    submit = SubmitField('Enter Comment')
+class ClassCreateForm(FlaskForm):
+    class_id = StringField('Class ID (Max 8 characters, Required)', validators=[InputRequired(), Length(min=1, max=8)])
+    class_name = StringField('Longer Classname (Required)', validators=[InputRequired(), Length(min=1, max=100)])
+    class_size = IntegerField('Maximum Class Capacity', validators=[NumberRange(min=0, max=10)])
+    description = TextAreaField('Description', validators=[Length(min=1, max=1000)])
+    submit = SubmitField('Create Classroom')
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=1, max=40)])
@@ -34,13 +38,6 @@ class RegistrationForm(FlaskForm):
         user = User.objects(email=email.data).first()
         if user is not None:
             raise ValidationError('Email is taken')
-
-# TODO
-class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[InputRequired(), Length(min=1, max=40)])
-    email = StringField('Email', validators=[InputRequired(), Length(min=1, max=40)])
-    password = PasswordField('Password', validators=[InputRequired(), Length(min=1, max=40)])
-    submit = SubmitField("Login")
 
 class UpdateUsernameForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=1, max=40)])

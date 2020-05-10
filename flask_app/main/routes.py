@@ -1,7 +1,8 @@
 # 3rd-party packages
 from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
 from flask_mongoengine import MongoEngine
-from flask_login import LoginManager, current_user, login_user, logout_user, login_required
+from flask_login import current_user, login_user, logout_user, login_required
+#from flask_user import current_user, UserManager, login_required
 from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
 
@@ -12,7 +13,7 @@ from datetime import datetime
 from .. import app, bcrypt
 from .forms import *
 from ..models import User, load_user
-from ..utils import current_time
+from ..utils import role_required, current_time
 
 # Main includes any pages viewable by new users, or that might be shared by teachers and students
 main = Blueprint("main", __name__)
@@ -20,9 +21,8 @@ main = Blueprint("main", __name__)
 @main.route('/', methods=['GET', 'POST'])
 def index():
     # need to check user student or teacher to link correct account page
-    if current_user.is_authenticated:
-        print(dir(current_user))
-        return render_template('index.html')
+    #if current_user.is_authenticated:
+    #    return render_template('index.html')
     return render_template('index.html')
 
 """ ************ Account Creation/Login views ************ """
@@ -33,7 +33,6 @@ def register():
 
     form = RegistrationForm()
     # successful add
-    print(form.user_type.validate(form))
     if form.validate_on_submit():
         hashedpwd = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         new_user = User(fullname=form.givenname.data, username=form.username.data, email=form.email.data,
@@ -47,7 +46,6 @@ def register():
 @main.route('/login', methods=['GET', 'POST'])
 def login():
 
-    print("hey")
     if current_user.is_authenticated:
         return redirect(url_for('account'))
 
@@ -55,7 +53,6 @@ def login():
 
     if form.validate_on_submit():
         user = load_user(form.username.data)
-        print(dir(user))
 
         if user is not None and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user)
@@ -72,3 +69,6 @@ def logout():
     logout_user()
     return redirect(url_for('main.index'))
 
+@main.route('/credits', methods=['GET'])
+def credits():
+    return render_template('credits.html')
