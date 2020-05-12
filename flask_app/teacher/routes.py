@@ -36,21 +36,6 @@ def user_info(username):
 def account():
     # get all taught classes
     taught_classes = Classroom.objects(teacher=load_user(current_user.username))
-    # TODO: Classroom creator/options, messages/inbox
-    #if username_update.validate_on_submit():
-        # perform username update
-        #new_username = username_update.username.data
-        #user = load_user(current_user.username), 
-        #user = User.objects(username=current_user.username).first()
-
-        # check uniqueness
-        #user.modify(username=new_username)
-        #user.save()
-        #return render_template('teacher-account.html', username_form=username_update, picture_form=picture_update)
-    
-    #if picture_update.validate_on_submit():
-    #    return render_template('teacher-account.html', username_form=username_update, picture_form=picture_update)
-
     return render_template('teacher-account.html', taught_classes=taught_classes, msg=None)
 
 # page that loads the classroom creator

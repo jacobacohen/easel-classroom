@@ -12,8 +12,8 @@ from datetime import datetime
 # local
 from .. import app, bcrypt
 from .forms import *
-from ..models import User, load_user
-from ..utils import role_required, current_time
+from ..models import * 
+from ..utils import *
 
 # Main includes any pages viewable by new users, or that might be shared by teachers and students
 main = Blueprint("main", __name__)
@@ -68,7 +68,29 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('main.index'))
+""" ************ Teacher/Student Shared views ************ """
+@main.route('/account', methods=['GET', 'POST'])
+@login_required
+def account():
+    # TEACHER: get all taught classes
+    if current_user.user_type == "Teacher":
+        taught_classes = Classroom.objects(teacher=load_user(current_user.username))
+        return render_template('teacher-account.html', taught_classes=taught_classes, msg=None)
+    # STUDENT: get all enrolled classes
+    else:
+        enrolled_classes = Classroom.objects(students__in=[load_user(current_user.username)])
+        return render_template('student-account.html', enrolled_classes=enrolled_classes, msg=None)
 
+
+@main.route('/courses/<class_id>')
+@login_required
+def course_page(class_id):
+    # not enrolled, redirect
+    if not enroll_required(class_id):
+        return redirect(url_for('main.index'))
+    return str("geeked")
+
+""" ************ Account Creation/Login views ************ """
 @main.route('/credits', methods=['GET'])
 def credits():
     return render_template('credits.html')
