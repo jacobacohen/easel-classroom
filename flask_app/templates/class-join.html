@@ -2,37 +2,23 @@
 {% block content %}
 <div class="row">
     <div class="col">
-        <h2>Class Creator</h2>
+        <h2>Find an open class</h2>
     </div>
 </div>
 <!-- Registration Form: -->
 <div class="row">
     <div class="col">
-        <form method="POST" action="">
-            {{ form.csrf_token }}
-            <div class="form-group">
-                {{ form.class_id.label }}
-                {{ form.class_id(class="form-control") }}
+        <ul>
+        {% for cls, open_seats in open_classes %}
+        <li>{{ cls.class_id }}-{{ cls.classname }} (Open Seats:{{ open_seats }})<br>
+        {% if cls.description != "" or cls.description != None %}
+        &emsp;Description: {{ cls.description}}<br>&emsp;
 
-                {{ form.class_name.label }}
-                {{ form.class_name(class="form-control") }}
-
-                {{ form.class_size.label }}
-                {{ form.class_size(class="form-control") }}
-
-                {{ form.description.label }}
-                {{ form.description(class="form-control") }}
-
-                {% if form.errors %}
-                <div class="alert alert-warning" role="alert">
-                    {% for error in form.errors %}
-                    <span>{{ error }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-            {{ form.submit() }}
-        </form>
+        {% endif %}
+        &emsp;<a href={{ url_for('student.enroll', class_id=cls.class_id) }}>Enroll now!</a>
+        </li>
+        {% endfor %}
+        </ul>
 
     </div>
 </div>

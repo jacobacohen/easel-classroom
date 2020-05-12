@@ -12,7 +12,7 @@ from datetime import datetime
 # local
 from .. import app, bcrypt
 from .forms import * 
-from ..models import User, load_user
+from ..models import User, Classroom, load_user
 from ..utils import role_required, current_time
 
 student = Blueprint("student", __name__)
@@ -57,6 +57,34 @@ def account():
 @student.route('/class-join', methods=['GET', 'POST'])
 @role_required(role='Student')
 def class_join():
-    # get list of open classes to join
-    return 'yeeter'
+    # get list of classes to join (that student isn't already in)
+    open_classes = []
+    open_seats = "No Limit"
+    for unenrolled in Classroom.objects(students__nin=[load_user(current_user.username)]):
+        print(unenrolled.students)
+        # check for open seats
+        # no seating limit
+        if unenrolled.class_size == None or unenrolled.class_size == 0:
+            open_classes.append((unenrolled, open_seats))
+        # seating limit check
+        elif len(unenrolled.students) < unenrolled.class_size:
+            open_seats = unenrolled.class_size - len(unenrolled.students)
+            open_classes.append((unenrolled, open_seats))
 
+    return render_template('class-join.html', form=None, open_classes=open_classes, open_seats=open_seats)
+
+@student.route('/enroll/<class_id>', methods=['GET'])
+@role_required(role='Student')
+def enroll(class_id):
+    # Add student to class' students and redirect to the course page
+    class_adding = Classroom.objects(class_id=class_id).first()
+    # double check class availability
+    if not (class_adding.class_size == None or class_adding.class_size == 0) and len(class_adding.students) >= class_adding.class_size:
+        return "Class full - could not enroll"
+    # check if student already in class
+    if load_user(current_user.username) in class_adding.students:
+        return "Already enrolled"
+    else:
+        class_adding.update(students=class_adding.students.append(load_user(current_user.username)))
+        class_adding.save()
+        return redirect(url_for('main.course_page', class_id=class_id))

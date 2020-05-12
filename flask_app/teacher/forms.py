@@ -15,10 +15,10 @@ class SearchForm(FlaskForm):
     submit = SubmitField('Search')
 
 class ClassCreateForm(FlaskForm):
-    class_id = StringField('Class ID (Max 8 characters, Required)', validators=[InputRequired(), Length(min=1, max=8)])
+    class_id = StringField('Class ID (Max 8 characters, alphabet characters will convert to be capitalized, Required)', validators=[InputRequired(), Length(min=1, max=8)])
     class_name = StringField('Longer Classname (Required)', validators=[InputRequired(), Length(min=1, max=100)])
-    class_size = IntegerField('Maximum Class Capacity', validators=[NumberRange(min=0, max=10)])
-    description = TextAreaField('Description', validators=[Length(min=1, max=1000)])
+    class_size = IntegerField('Maximum Class Capacity (Not required, cap up to 1000 available)', validators=[NumberRange(min=0, max=1000)])
+    description = TextAreaField('Description of Class (Not required)', validators=[Length(min=0, max=1000)])
     submit = SubmitField('Create Classroom')
 
 class RegistrationForm(FlaskForm):

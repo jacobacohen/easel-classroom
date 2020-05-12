@@ -88,7 +88,7 @@ def course_page(class_id):
     # not enrolled, redirect
     if not enroll_required(class_id):
         return redirect(url_for('main.index'))
-    return str("geeked")
+    return str(class_id)
 
 """ ************ Account Creation/Login views ************ """
 @main.route('/credits', methods=['GET'])

@@ -47,7 +47,7 @@ def class_creator():
     if form.validate_on_submit():
         # instantiate class size if not given
         class_size = 0 if form.class_size == None else form.class_size.data
-        new_class = Classroom(teacher=load_user(current_user.username), class_id=form.class_id.data, classname=form.class_name.data,
+        new_class = Classroom(teacher=load_user(current_user.username), class_id=form.class_id.data.upper(), classname=form.class_name.data,
                 class_size = class_size, description=form.description.data, students=[], assignments=[])
         new_class.save()
         return redirect(url_for('teacher.account', msg='Class successfully created'))

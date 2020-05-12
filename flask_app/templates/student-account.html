@@ -9,9 +9,9 @@
 <div class="row">
     <div class="col">
         {# Username Update username_form #}
-        <h2>Registered Classes</h2>
-        {% for cls in taught_classes %}
-            <h3>{{ cls.class_id }}</h3>
+        <h2>Enrolled Classes</h2>
+        {% for cls in enrolled_classes %}
+        <h3><a href={{ url_for('main.course_page', class_id=cls.class_id) }}>{{ cls.class_id }}</a></h3>
         {% endfor %}
     </div>
 </div>
