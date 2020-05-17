@@ -10,10 +10,6 @@ from wtforms.validators import (InputRequired, DataRequired, NumberRange, Length
 
 from ..models import User
 
-class SearchForm(FlaskForm):
-    search_query = StringField('Query', validators=[InputRequired(), Length(min=1, max=100)])
-    submit = SubmitField('Search')
-
 class ClassCreateForm(FlaskForm):
     class_id = StringField('Class ID (Max 8 characters, alphabet characters will convert to be capitalized, Required)', validators=[InputRequired(), Length(min=1, max=8)])
     class_name = StringField('Longer Classname (Required)', validators=[InputRequired(), Length(min=1, max=100)])
@@ -21,32 +17,15 @@ class ClassCreateForm(FlaskForm):
     description = TextAreaField('Description of Class (Not required)', validators=[Length(min=0, max=1000)])
     submit = SubmitField('Create Classroom')
 
-class RegistrationForm(FlaskForm):
-    username = StringField('Username', validators=[InputRequired(), Length(min=1, max=40)])
-    email = StringField('Email', validators=[InputRequired(), Email()])
-    password = PasswordField('Password', validators=[InputRequired()])
-    confirm_password = PasswordField('Confirm Password', 
-                                    validators=[InputRequired(), EqualTo('password')])
-    submit = SubmitField('Sign Up')
+class AssignmentCreateForm(FlaskForm):
+    assignment_name = StringField('Name for assignment (20 character max)', validators=[InputRequired(), Length(min=1, max=20)])
+    assignment_type = StringField('Assignment Type (20 character max)', validators=[InputRequired(), Length(min=1, max=20)])
+    points = IntegerField('Points Assignment is worth', validators=[InputRequired()])
+    description = TextAreaField('Assignment description (1000 character max, not required)', validators=[Length(min=0, max=1000)])
 
-    def validate_username(self, username):
-        user = User.objects(username=username.data).first()
-        if user is not None:
-            raise ValidationError('Username is taken')
+    submit = SubmitField('Create Classroom')
 
-    def validate_email(self, email):        
-        user = User.objects(email=email.data).first()
-        if user is not None:
-            raise ValidationError('Email is taken')
 
-class UpdateUsernameForm(FlaskForm):
-    username = StringField('Username', validators=[InputRequired(), Length(min=1, max=40)])
-    submit = SubmitField("Change Username")
 
-    def validate_username(self, username):
-        existing_user = User.objects(username=username.data).first()
-        if existing_user is not None:
-            raise ValidationError('Username is taken')
-
-class UpdateProfilePicForm(FlaskForm):
+class GradingForm(FlaskForm):
     pass

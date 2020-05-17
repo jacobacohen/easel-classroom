@@ -14,7 +14,7 @@ from .. import app, bcrypt
 from .forms import *
 #from ..models import User, load_user
 from ..models import *
-from ..utils import role_required, current_time
+from ..utils import role_required, current_time, enroll_required
 
 teacher = Blueprint("teacher", __name__)
 
@@ -50,5 +50,45 @@ def class_creator():
         new_class = Classroom(teacher=load_user(current_user.username), class_id=form.class_id.data.upper(), classname=form.class_name.data,
                 class_size = class_size, description=form.description.data, students=[], assignments=[])
         new_class.save()
-        return redirect(url_for('teacher.account', msg='Class successfully created'))
+        return redirect(url_for('main.course_page', class_id=form.class_id.data.upper(), msg='Class successfully created'))
     return render_template('class-create.html', form=form)
+
+
+@teacher.route('/courses/<class_id>/students')
+@role_required(role='Teacher')
+def students(class_id):
+    if not enroll_required(class_id):
+        return redirect(url_for('main.index'))
+    cls = Classroom.objects(class_id=class_id).first()
+    studs = list(cls.students)
+    assignments = list(cls.assignments)
+    # TODO: Add student grades here 
+    return render_template('class-students.html', students=studs, assignments=assignments)
+
+@teacher.route('/courses/<class_id>/create-assignment', methods=['GET', 'POST'])
+@role_required(role='Teacher')
+def create_assignment(class_id):
+    if not enroll_required(class_id):
+        return redirect(url_for('main.index'))
+    form = AssignmentCreateForm()
+
+    if form.validate_on_submit():
+        # add assignment to classroom in database
+        new_assign = Assignment(assignment_name=form.assignment_name.data,
+                assignment_type=form.assignment_type.data, points=form.points.data,
+                grades=[], parent_class=load_class(class_id))
+        new_assign.save()
+        return redirect(url_for('teacher.grade_modify', class_id=class_id))
+
+    return render_template('assign-create.html', form=form, class_id=class_id)
+
+
+@teacher.route('/courses/<class_id>/grading')
+@role_required(role='Teacher')
+def grade_modify(class_id):
+    if not enroll_required(class_id):
+        return redirect(url_for('main.index'))
+
+    form = AssignmentCreateForm()
+    return render_template('grading.html', form=form, class_id=class_id)
+

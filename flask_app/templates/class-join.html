@@ -10,7 +10,7 @@
     <div class="col">
         <ul>
         {% for cls, open_seats in open_classes %}
-        <li>{{ cls.class_id }}-{{ cls.classname }} (Open Seats:{{ open_seats }})<br>
+        <li>{{ cls.class_id }}-{{ cls.classname }} (Open Seats:{{ open_seats }}) Instructor: {{ cls.teacher.fullname }} <br>
         {% if cls.description != "" or cls.description != None %}
         &emsp;Description: {{ cls.description}}<br>&emsp;
 

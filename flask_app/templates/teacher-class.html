@@ -1,0 +1,24 @@
+{% extends "header.html" %}
+{% block content %}
+
+<h2>{{ cur_class.class_id }}</h2>
+<h3>Teaching <a href={{ url_for('teacher.students', class_id=cur_class.class_id) }}>{{ teaching }} students.</a></h3>
+<div class="row">
+    <div class="col">
+        <h2>Class assignments</h2>
+        {% for asnm in assignments %}  
+        <h3>asnm</h3>
+        {% endfor %}
+    </div>
+    <div class="col">
+        <h2><a href={{ url_for('teacher.create_assignment', class_id=cur_class.class_id) }}>Create a new assignment</a></h2>
+        <h2><a href={{ url_for('teacher.grade_modify', class_id=cur_class.class_id) }}>Submit/Change Grades</a></h2>
+    </div>
+</div>
+<div class="row">
+    <h2><a href={{ url_for('main.inbox', class_id=cur_class.class_id) }}>Inbox</a> {{ unreads }} unread messages in this class</h2>
+</div>
+<div class="row">
+    <h2><a href={{ url_for('main.message', class_id=cur_class.class_id) }}>Send a message</a></h2>
+</div>
+{% endblock %}

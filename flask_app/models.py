@@ -7,6 +7,9 @@ from . import db, login_manager
 def load_user(user_id):
     return User.objects(username=user_id).first()
 
+def load_class(class_id):
+    return Classroom.objects(class_id=class_id).first()
+
 class User(db.Document, UserMixin):
     fullname = db.StringField(required=True)
     username = db.StringField(unique=True, required=True)
@@ -42,7 +45,8 @@ class Message(db.Document):
     sender = db.ReferenceField('User', required=True)
     reciever = db.ReferenceField('User', required=True)
     classroom = db.ReferenceField('Classroom', required=True)
-    content = db.StringField(required=True, min_length=1, max_length=600)
+    content = db.StringField(required=True, min_length=1, max_length=1000)
+    unread = db.BooleanField(default=True)
     timestamp = db.DateTimeField(auto_now_add=True)
 
     def get_id(self):
@@ -50,7 +54,10 @@ class Message(db.Document):
 
 class Assignment(db.Document):
     # must be unique within a class
-    name = db.StringField(required=True)
+    assignment_name = db.StringField(required=True, min_length=1, max_length=20)
+    assignment_type = db.StringField(required=True, min_length=1, max_length=20)
+    points = db.IntField(min_value=0)
+    description = db.StringField(min_length=0, max_length=1000)
     parent_class = db.ReferenceField('Classroom', required=True)
     grades = db.ListField(db.ReferenceField('Grade'))
 

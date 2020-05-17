@@ -20,10 +20,12 @@ main = Blueprint("main", __name__)
 """ ************ View functions ************ """
 @main.route('/', methods=['GET', 'POST'])
 def index():
-    # need to check user student or teacher to link correct account page
-    #if current_user.is_authenticated:
-    #    return render_template('index.html')
-    return render_template('index.html')
+    # Get open classes for homepage
+    open_classes = []
+    for cls in Classroom.objects():
+        if cls.class_size == None or len(cls.students) < cls.class_size or cls.class_size == 0:
+            open_classes.append(cls)
+    return render_template('index.html', open_classes=open_classes)
 
 """ ************ Account Creation/Login views ************ """
 @main.route('/register', methods=['GET', 'POST'])
@@ -88,8 +90,32 @@ def course_page(class_id):
     # not enrolled, redirect
     if not enroll_required(class_id):
         return redirect(url_for('main.index'))
-    return str(class_id)
+    # if teacher
+    cur_class = Classroom.objects(class_id=class_id).first()
+    unreads = len(Message.objects(reciever=load_user(current_user.username), classroom=load_class(class_id), unread=True))
+    if current_user.user_type == "Teacher":
+        # Featured content: Students enrolled, create assignment, assign grades, send message, inbox
+        return render_template('teacher-class.html', cur_class=cur_class, teaching=len(cur_class.students), unreads=unreads)
+    # if student
+    if current_user.user_type == "Student":
+        # Featured content: View assignments, grades, Send a message
+        return render_template('student-class.html', cur_class=cur_class, unreads=unreads)
 
+@main.route('/courses/<class_id>/compose')
+@login_required
+def message(class_id):
+    if not enroll_required(class_id):
+        return redirect(url_for('main.index'))
+    # TODO: return message composer
+    return "message"
+
+@main.route('/courses/<class_id>/inbox')
+@login_required
+def inbox(class_id):
+    if not enroll_required(class_id):
+        return redirect(url_for('main.index'))
+    # TODO: return list of recieved messages
+    return "message"
 """ ************ Account Creation/Login views ************ """
 @main.route('/credits', methods=['GET'])
 def credits():
