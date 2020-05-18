@@ -1,8 +1,11 @@
 {% extends "header.html" %}
 {% block content %}
 
-{% for student in students %}
+{% for student, grades in student_class.items() %}
 <h3>Name: {{ student.fullname }} ({{ student.username }})</h3>
+    {% for a, g in grades %}
+    <h4>&emsp;{{ a }}: {{ g }}</h4> 
+    {% endfor %}
 {% endfor %}
 
 {% endblock %}

@@ -18,18 +18,6 @@ from ..utils import role_required, current_time, enroll_required
 
 teacher = Blueprint("teacher", __name__)
 
-@teacher.route('/user/<username>')
-def user_info(username):
-    user = User.objects(username=username).first()
-
-    # user exists
-    #if user is not None:
-    #    user_reviews = Review.objects(commenter=user)
-    #    return render_template("user_detail.html", error=None, username=username, reviews=user_reviews, total_reviews=len(user_reviews))
-        #return render_template("user_detail.html", error=None)
-    # user does not exist
-    #return render_template("user_detail.html", error="No such user", username=username, reviews=None, total_reviews=0)
-
 """ ************ User Management views ************ """
 @teacher.route('/account', methods=['GET', 'POST'])
 @role_required(role='Teacher')
@@ -38,6 +26,7 @@ def account():
     taught_classes = Classroom.objects(teacher=load_user(current_user.username))
     return render_template('teacher-account.html', taught_classes=taught_classes, msg=None)
 
+""" ************ Teacher user views ************ """
 # page that loads the classroom creator
 @teacher.route('/class-creation', methods=['GET', 'POST'])
 @role_required(role='Teacher')
@@ -59,36 +48,84 @@ def class_creator():
 def students(class_id):
     if not enroll_required(class_id):
         return redirect(url_for('main.index'))
+    # Get dictionary with students and grade objects
     cls = Classroom.objects(class_id=class_id).first()
     studs = list(cls.students)
-    assignments = list(cls.assignments)
+    student_class = {}
+    for s in studs:
+        student_class[s] = []
+    assignments = list(Assignment.objects(parent_class=cls))
+    for grade in Grade.objects(parent_assignment__in=assignments):
+        if student_class.get(grade.student) == None:
+            student_class[grade.student] = [(grade.parent_assignment.assignment_name, grade.grade)]
+        else:
+            student_class[grade.student].append((grade.parent_assignment.assignment_name, grade.grade))
     # TODO: Add student grades here 
-    return render_template('class-students.html', students=studs, assignments=assignments)
+    return render_template('class-students.html', students=studs, student_class=student_class)
 
 @teacher.route('/courses/<class_id>/create-assignment', methods=['GET', 'POST'])
 @role_required(role='Teacher')
 def create_assignment(class_id):
     if not enroll_required(class_id):
         return redirect(url_for('main.index'))
+    # Make it so we can get the class id
+    setattr(AssignmentCreateForm, "get_class_id", lambda : class_id)
+    # class_id passed in as prefix
     form = AssignmentCreateForm()
 
     if form.validate_on_submit():
         # add assignment to classroom in database
         new_assign = Assignment(assignment_name=form.assignment_name.data,
                 assignment_type=form.assignment_type.data, points=form.points.data,
-                grades=[], parent_class=load_class(class_id))
+                grades=[], description=form.description.data, parent_class=load_class(class_id))
         new_assign.save()
         return redirect(url_for('teacher.grade_modify', class_id=class_id))
 
     return render_template('assign-create.html', form=form, class_id=class_id)
 
 
-@teacher.route('/courses/<class_id>/grading')
+@teacher.route('/courses/<class_id>/grading', methods=['GET', 'POST'])
 @role_required(role='Teacher')
 def grade_modify(class_id):
     if not enroll_required(class_id):
         return redirect(url_for('main.index'))
 
-    form = AssignmentCreateForm()
+    # Get students enrolled in class and assignments in class
+    cls = Classroom.objects(class_id=class_id).first()
+    students = []
+    for s in cls.students:
+        students.append((s.username, s.fullname + " (" + s.username + ")"))
+    assignments = []
+    for a in Assignment.objects(parent_class=load_class(class_id)):
+        assignments.append((a.assignment_name, a.assignment_name + " (Worth " + str(a.points) + " Points)" ))
+
+    # Get students enrolled in class and assignments in class
+    form = GradingForm()
+    form.student.choices=students
+    form.assignment.choices = assignments
+    if form.validate_on_submit():
+        cls = load_class(class_id)
+        a_modify = Assignment.objects(parent_class=cls, assignment_name=form.assignment.data).first()
+        print(a_modify)
+        #print(assignment_modify)
+        # submit grade for student (or modify if existing
+        previous_grade = Grade.objects(student=load_user(form.student.data), parent_assignment=a_modify).first()
+        # modify
+        if previous_grade != None:
+            print("we do this?")
+            previous_grade.update(grade=form.grade.data)
+            previous_grade.save()
+        # no need to update the assignments list as it's a reference
+        # create new grade
+        else:
+            new_grade = Grade(student=load_user(form.student.data), parent_assignment=a_modify,
+                grade=form.grade.data)
+            new_grade.save()
+            # need to update assignments list
+            grades_list = list(a_modify.grades)
+            a_modify.update(grades=grades_list.append(new_grade))
+            a_modify.save()
+        # redirect to the same grade submit page
+        return redirect(url_for('teacher.grade_modify', class_id=class_id))
     return render_template('grading.html', form=form, class_id=class_id)
 

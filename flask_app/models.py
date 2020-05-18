@@ -10,6 +10,9 @@ def load_user(user_id):
 def load_class(class_id):
     return Classroom.objects(class_id=class_id).first()
 
+def load_assignment(assignment_name, class_id):
+    return Assignment.objects(assignment_name=assignment_name, parent_class=class_id).first()
+
 class User(db.Document, UserMixin):
     fullname = db.StringField(required=True)
     username = db.StringField(unique=True, required=True)
@@ -53,7 +56,7 @@ class Message(db.Document):
         return str(self.timestamp) +  str(self.sender) + str(self.reciever)
 
 class Assignment(db.Document):
-    # must be unique within a class
+    # TODO: must be unique within a class
     assignment_name = db.StringField(required=True, min_length=1, max_length=20)
     assignment_type = db.StringField(required=True, min_length=1, max_length=20)
     points = db.IntField(min_value=0)

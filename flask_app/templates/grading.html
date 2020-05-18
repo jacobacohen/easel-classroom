@@ -5,23 +5,20 @@
         <h2>Submit/Modify Grades: {{ class_id }}</h2>
     </div>
 </div>
-<!-- Registration Form: -->
+<!-- Grading Form: -->
 <div class="row">
     <div class="col">
         <form method="POST" action="">
             {{ form.csrf_token }}
             <div class="form-group">
-                {{ form.assignment_name.label }}
-                {{ form.assignment_name(class="form-control") }}
+                {{ form.assignment.label }}
+                {{ form.assignment(class="form-control") }}
 
-                {{ form.assignment_type.label }}
-                {{ form.assignment_type(class="form-control") }}
+                {{ form.student.label }}
+                {{ form.student(class="form-control") }}
 
-                {{ form.points.label }}
-                {{ form.points(class="form-control") }}
-
-                {{ form.description.label }}
-                {{ form.description(class="form-control") }}
+                {{ form.grade.label }}
+                {{ form.grade(class="form-control") }}
 
                 {% if form.errors %}
                 <div class="alert alert-warning" role="alert">
@@ -35,6 +32,9 @@
         </form>
 
     </div>
+</div>
+<div class="row">
+    <h3><a href={{ url_for('teacher.students', class_id=class_id) }}>View student assignment grades</a></h3>
 </div>
 
 {% endblock %}
