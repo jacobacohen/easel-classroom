@@ -17,7 +17,7 @@ class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=1, max=40)])
     email = StringField('Email', validators=[InputRequired(), Email()])
     user_type = RadioField('Teacher or Student?', choices=[('Teacher', 'Teacher'), ('Student', 'Student')])
-    password = PasswordField('Password', validators=[InputRequired()])
+    password = PasswordField('Password (Requirements: 8 character minimum with 1 or more uppercase, lowercase, digit and special characters (!,@,#,$,%,^,&,*,(,)-,=,+))', validators=[InputRequired(), Length(min=8)])
     confirm_password = PasswordField('Confirm Password', 
                                     validators=[InputRequired(), EqualTo('password')])
     submit = SubmitField('Sign Up')
@@ -31,6 +31,18 @@ class RegistrationForm(FlaskForm):
         user = User.objects(email=email.data).first()
         if user is not None:
             raise ValidationError('Email is taken')
+
+    def validate_password(self, password):
+        pw = password.data
+        special = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '=', '+']
+        if not any(c.isupper() for c in pw):
+            raise ValidationError('No uppercase characters detected')
+        if not any(c.islower() for c in pw):
+            raise ValidationError('No lowercase characters detected')
+        if not any(c.isdigit() for c in pw):
+            raise ValidationError('No digit characters detected')
+        if not any(c in special for c in pw):
+            raise ValidationError('No special characters detected')
 
 class MessageComposeForm(FlaskForm):
     sending_to = SelectMultipleField("Select 1 or more recipients", validators=[InputRequired()])
