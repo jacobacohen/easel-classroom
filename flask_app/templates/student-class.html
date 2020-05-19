@@ -1,21 +1,22 @@
 {% extends "header.html" %}
 {% block content %}
 
+<h2>{{ cur_class.class_id }}: Taught by {{ cur_class.teacher.fullname }}</h2>
 <div class="row">
-    <h2>{{ class_id }}</h2>
+    <div class="col">
+        <h2>Class assignments</h2>
+        {% for asnm in assignments %}  
+        <h3><a href={{ url_for('student.assignment_view', a=asnm[0].id, class_id=cur_class.class_id) }}>{{ asnm[0].assignment_name }}</a> ({{ asnm[1] }})</h3>
+        {% endfor %}
+    </div>
+    <div class="col">
+        <!--<h2><a href={{ url_for('student.assignments', class_id=cur_class.class_id) }}>View all Assignments</a></h2> -->
+    </div>
 </div>
 <div class="row">
-    <div class="col">
-        <h2>Welcome to Easel - the online classroom manager. Sign in as a student or teacher to the above! View registered classes to the right!</h2>
-    </div>
-    <div class="col">
-        <h2>Classes open right now:</h2><br>
-        <ul>
-        {% for cls in open_classes %}
-        <li>{{ cls.class_id }}-{{ cls.classname }}<br>
-        {% endfor %}
-        </ul>
-        <h3>Join or create a class now!</h3>
-    </div>
+    <h2><a href={{ url_for('main.inbox', class_id=cur_class.class_id) }}>Inbox</a> {{ unreads }} unread messages in this class</h2>
+</div>
+<div class="row">
+    <h2><a href={{ url_for('main.message', class_id=cur_class.class_id) }}>Send a message</a></h2>
 </div>
 {% endblock %}

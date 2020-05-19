@@ -12,8 +12,8 @@ from datetime import datetime
 # local
 from .. import app, bcrypt
 from .forms import * 
-from ..models import User, Classroom, load_user
-from ..utils import role_required, current_time
+from ..models import * 
+from ..utils import enroll_required, role_required, current_time
 
 student = Blueprint("student", __name__)
 
@@ -35,24 +35,7 @@ def user_detail(username):
 @student.route('/account', methods=['GET', 'POST'])
 @role_required(role='Student')
 def account():
-    username_update = UpdateUsernameForm()
-    picture_update = UpdateProfilePicForm()
-
-    if username_update.validate_on_submit():
-        # perform username update
-        new_username = username_update.username.data
-        user = load_user(current_user.username), 
-        user = User.objects(username=current_user.username).first()
-
-        # check uniqueness
-        user.modify(username=new_username)
-        user.save()
-        return render_template('studnet-account.html', username_form=username_update, picture_form=picture_update)
-
-    if picture_update.validate_on_submit():
-        return render_template('student-account.html', username_form=username_update, picture_form=picture_update)
-
-    return render_template('student-account.html', username_form=username_update, picture_form=picture_update)
+    return render_template('student-account.html')
 
 @student.route('/class-join', methods=['GET', 'POST'])
 @role_required(role='Student')
@@ -88,3 +71,19 @@ def enroll(class_id):
         class_adding.update(students=class_adding.students.append(load_user(current_user.username)))
         class_adding.save()
         return redirect(url_for('main.course_page', class_id=class_id))
+
+@student.route('/<class_id>/assignments/')
+@role_required(role='Student')
+def assignments(class_id):
+    if not enroll_required(class_id):
+        return redirect(url_for('main.index'))
+    return "assignment"
+
+@student.route('/<class_id>/assignment/<a>.html')
+@role_required(role='Student')
+def assignment_view(class_id, a):
+    if not enroll_required(class_id):
+        return redirect(url_for('main.index'))
+    assignment = Assignment.objects(id=a).first()
+    grade = Grade.objects(parent_assignment=assignment, student=load_user(current_user.username)).first()
+    return render_template("assignment_page.html", class_id=class_id, assignment=assignment, grade=grade)

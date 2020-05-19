@@ -1,0 +1,21 @@
+{% extends "header.html" %}
+{% block content %}
+<div class="row">
+    <div class="col">
+        <h2>View messages</h2>
+    </div>
+</div>
+<!-- Registration Form: -->
+<div class="row">
+    <div class="col">
+        <ul>
+        {% for m in messages %}
+        <li>{{ "Unread" if m.unread else ""}} From: {{ m.sender.fullname }} at {{ m.timestamp }} <br>
+            &emsp;<a href={{ url_for('main.message_page', class_id=class_id, m_id=m.id) }}>{{ m.message_title }}</a>
+        {% endfor %}
+        </ul>
+
+    </div>
+</div>
+
+{% endblock %}

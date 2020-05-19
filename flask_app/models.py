@@ -46,17 +46,17 @@ class Classroom(db.Document):
 
 class Message(db.Document):
     sender = db.ReferenceField('User', required=True)
-    reciever = db.ReferenceField('User', required=True)
+    recipients = db.ListField(db.ReferenceField('User'), required=True)
     classroom = db.ReferenceField('Classroom', required=True)
     content = db.StringField(required=True, min_length=1, max_length=1000)
+    message_title = db.StringField(required=True, min_length=1, max_length=40)
     unread = db.BooleanField(default=True)
-    timestamp = db.DateTimeField(auto_now_add=True)
+    timestamp = db.DateTimeField(auto_now_add=True, default=datetime.utcnow)
 
     def get_id(self):
         return str(self.timestamp) +  str(self.sender) + str(self.reciever)
 
 class Assignment(db.Document):
-    # TODO: must be unique within a class
     assignment_name = db.StringField(required=True, min_length=1, max_length=20)
     assignment_type = db.StringField(required=True, min_length=1, max_length=20)
     points = db.IntField(min_value=0)

@@ -92,22 +92,55 @@ def course_page(class_id):
         return redirect(url_for('main.index'))
     # if teacher
     cur_class = Classroom.objects(class_id=class_id).first()
-    unreads = len(Message.objects(reciever=load_user(current_user.username), classroom=load_class(class_id), unread=True))
+    unreads = len(Message.objects(recipients__in=[load_user(current_user.username)], classroom=load_class(class_id), unread=True))
     if current_user.user_type == "Teacher":
         # Featured content: Students enrolled, create assignment, assign grades, send message, inbox
         return render_template('teacher-class.html', cur_class=cur_class, teaching=len(cur_class.students), unreads=unreads)
     # if student
     if current_user.user_type == "Student":
         # Featured content: View assignments, grades, Send a message
-        return render_template('student-class.html', cur_class=cur_class, unreads=unreads)
+        # Get assignment and grade if recieved
+        assignments = []
+        for a in Assignment.objects(parent_class=load_class(class_id)):
+            if Grade.objects(student=load_user(current_user.username)) != None:
+                assignments.append((a, "Grade recieved"))
+            else:
+                assignments.append((a, "Not yet graded"))
+        return render_template('student-class.html', assignments=assignments, cur_class=cur_class, unreads=unreads)
 
-@main.route('/courses/<class_id>/compose')
+@main.route('/courses/<class_id>/compose', methods=["GET", "POST"])
 @login_required
 def message(class_id):
     if not enroll_required(class_id):
         return redirect(url_for('main.index'))
-    # TODO: return message composer
-    return "message"
+    setattr(MessageComposeForm, "get_class_id", lambda : class_id)
+    form = MessageComposeForm()
+
+    # set recipient choices for form
+    cur_class = load_class(class_id)
+    user = load_user(current_user.username)
+    could_recieve = []
+    # add students
+    for person in list(cur_class.students):
+        if person != user:
+            could_recieve.append((person.username, person.fullname + " (Student)"))
+    # add teacher if not teacher
+    if current_user.user_type == "Student":
+        could_recieve.append((cur_class.teacher.username, cur_class.teacher.fullname + " (Teacher)"))
+    form.sending_to.choices = could_recieve
+
+    if form.validate_on_submit():
+        #Create message with all the intended recipients
+        recipients = []
+        for u in form.sending_to.data:
+            recipients.append(load_user(u))
+        new_message = Message(sender=user, classroom=cur_class, content=form.content.data,
+                message_title=form.message_title.data, recipients=recipients)
+        new_message.save()
+        return redirect(url_for('main.message', class_id=class_id))
+
+    return render_template("compose.html", form=form, class_id=class_id)
+
 
 @main.route('/courses/<class_id>/inbox')
 @login_required
@@ -115,7 +148,20 @@ def inbox(class_id):
     if not enroll_required(class_id):
         return redirect(url_for('main.index'))
     # TODO: return list of recieved messages
-    return "message"
+    messages = list(Message.objects(classroom=load_class(class_id), recipients__in=[load_user(current_user.username)]))
+    return render_template("inbox.html", messages=messages, class_id=class_id)
+
+@main.route('/courses/<class_id>/inbox/<m_id>')
+@login_required
+def message_page(class_id, m_id):
+    if not enroll_required(class_id):
+        return redirect(url_for('main.index'))
+    # mark as read
+    m = Message.objects(id=m_id).first()
+    m.modify(unread=False)
+    m.save()
+    return render_template("message-page.html", m=m, class_id=class_id)
+
 """ ************ Account Creation/Login views ************ """
 @main.route('/credits', methods=['GET'])
 def credits():

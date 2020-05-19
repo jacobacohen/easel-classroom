@@ -1,0 +1,37 @@
+{% extends "header.html" %}
+{% block content %}
+<div class="row">
+    <div class="col">
+        <h2>Create Assignment: {{ class_id }}</h2>
+    </div>
+</div>
+<!-- Registration Form: -->
+<div class="row">
+    <div class="col">
+        <form method="POST" action="">
+            {{ form.csrf_token }}
+            <div class="form-group">
+                {{ form.sending_to.label }}
+                {{ form.sending_to(class="form-control") }}
+
+                {{ form.message_title.label }}
+                {{ form.message_title(class="form-control") }}
+
+                {{ form.content.label }}
+                {{ form.content(class="form-control") }}
+
+                {% if form.errors %}
+                <div class="alert alert-warning" role="alert">
+                    {% for error in form.errors %}
+                    <span>{{ error }}<br></span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {{ form.submit() }}
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

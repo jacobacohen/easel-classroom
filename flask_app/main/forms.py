@@ -3,7 +3,7 @@ from flask_login import current_user
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from werkzeug.utils import secure_filename
-from wtforms import StringField, IntegerField, SubmitField, TextAreaField, PasswordField, RadioField
+from wtforms import SelectMultipleField, StringField, IntegerField, SubmitField, TextAreaField, PasswordField, RadioField
 from wtforms.validators import (InputRequired, DataRequired, NumberRange, Length, Email, 
                                 EqualTo, ValidationError)
 
@@ -31,6 +31,13 @@ class RegistrationForm(FlaskForm):
         user = User.objects(email=email.data).first()
         if user is not None:
             raise ValidationError('Email is taken')
+
+class MessageComposeForm(FlaskForm):
+    sending_to = SelectMultipleField("Select 1 or more recipients", validators=[InputRequired()])
+    message_title = StringField("Message title (40 char or less)", validators=[InputRequired(), Length(min=1, max=40)])
+    content = TextAreaField("Message body (1000 char or less)", validators=[InputRequired(), Length(min=1, max=1000)])
+
+    submit = SubmitField('Send')
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=1, max=40)])

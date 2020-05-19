@@ -1,0 +1,18 @@
+{% extends "header.html" %}
+{% block content %}
+<div class="row">
+    <div class="col">
+        <h2>{{ m.message_title }}</h2>
+        <h2>From: {{ m.sender.fullname }}</h2>
+        <h1>&emsp;{{ m.content }}</h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <h2>Back to <a href={{ url_for('main.inbox', class_id=class_id) }}>Inbox</a></h2>
+        <h2><a href={{ url_for('main.message', class_id=class_id) }}>Write a new message</a></h2>
+
+    </div>
+</div>
+
+{% endblock %}
