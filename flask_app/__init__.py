@@ -14,19 +14,15 @@ from datetime import datetime
 
 app = Flask(__name__)
 # app.config["MONGO_URI"] = "mongodb://localhost:27017/second_database"
-app.config['MONGODB_HOST'] = 'mongodb://localhost:27017/easel'
+#app.config['MONGODB_HOST'] = 'mongodb://localhost:27017/easel'
+#real mongodb_host
+app.config['MONGODB_HOST'] = 'mongodb://heroku_jfhgfss2:4veq0p63f9hsj089qu8iree88t@ds139884.mlab.com:39884/heroku_jfhgfss2'
 # TODO: Use os.envrion secret key
 app.config['SECRET_KEY'] = '\x020;yr\x91\x11\xbe"\x9d\xc1\x14\x91\xadf\xec'
-#Class for Flask-User Settings
-#app.config['USER_APP_NAME'] = "Easel Classroom"
-#app.config['USER_ENABLE_EMAIL'] = False
-#app.config['USER_ENABLE_USERNAME'] = True
-#app.config['USER_REQUIRERETYPE_PASSWORD'] = False
 
 db = MongoEngine(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'main.login'
-# Setup Flask-User and User data-model
 bcrypt = Bcrypt(app)
 
 # blueprints
