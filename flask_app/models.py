@@ -2,6 +2,7 @@ from flask_login import UserMixin
 #from flask_user import UserManager, UserMixin
 from datetime import datetime
 from . import db, login_manager
+import pyotp
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -20,8 +21,8 @@ class User(db.Document, UserMixin):
     password = db.StringField(required=True)
     user_type = db.StringField(required=True)
     classes = db.ListField(db.ReferenceField('Classroom'))
-    #profile_pic = 
-    #.modify method to change data
+    # 2FA
+    otp_secret = db.StringField(required=True, min_length=16, max_length=16, default=pyotp.random_base32())
 
     # Returns unique string identifying our object
     def get_id(self):

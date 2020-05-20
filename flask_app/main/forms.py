@@ -6,9 +6,10 @@ from werkzeug.utils import secure_filename
 from wtforms import SelectMultipleField, StringField, IntegerField, SubmitField, TextAreaField, PasswordField, RadioField
 from wtforms.validators import (InputRequired, DataRequired, NumberRange, Length, Email, 
                                 EqualTo, ValidationError)
+import pyotp
 
 
-from ..models import User
+from ..models import User, load_user
 
 
 # Registration Fields: Full Name, Email, Password, Student or Teacher selection
@@ -56,6 +57,15 @@ class LoginForm(FlaskForm):
     email = StringField('Email', validators=[InputRequired(), Length(min=1, max=40)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=1, max=40)])
     submit = SubmitField("Login")
+    #2FA
+    token = StringField('2FA Token', validators=[InputRequired(), Length(min=6, max=6)])
+
+    def validate_token(self, token):
+        user = load_user(self.username.data)
+        if user is not None:
+            tok_verified = pyotp.TOTP(user.otp_secret).verify(token.data)
+            if not tok_verified:
+                raise ValidationError("Invalid 2FA Token")
 
 class UpdateUsernameForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=1, max=40)])

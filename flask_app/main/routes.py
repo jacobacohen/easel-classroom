@@ -1,10 +1,13 @@
 # 3rd-party packages
-from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
+from flask import Blueprint, render_template, request, redirect, url_for, flash, Response, session
 from flask_mongoengine import MongoEngine
 from flask_login import current_user, login_user, logout_user, login_required
 #from flask_user import current_user, UserManager, login_required
 from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
+from io import BytesIO
+import qrcode
+import qrcode.image.svg as svg
 
 # stdlib
 from datetime import datetime
@@ -40,10 +43,50 @@ def register():
         new_user = User(fullname=form.givenname.data, username=form.username.data, email=form.email.data,
                 password=hashedpwd, user_type=form.user_type.data)
         new_user.save()
-        return redirect(url_for('main.login'))
+        # 2FA
+        session['new_username'] = form.username.data
+        #return redirect(url_for('main.login'))
+        # redirect to 2fa
+        return redirect(url_for('main.tfa'))
 
     return render_template("register.html", form=form)
 
+#2FA QR Code
+@main.route('/qr_code')
+def qr_code():
+    if 'new_username' not in session:
+        return redirect(url_for('main.index'))
+
+    user = load_user(session['new_username'])
+    session.pop('new_username')
+
+    uri = pyotp.totp.TOTP(user.otp_secret).provisioning_uri(name=user.username, issuer_name='easel-classroom')
+    img = qrcode.make(uri, image_factory=svg.SvgPathImage)
+    stream = BytesIO()
+    img.save(stream)
+
+    headers = {
+        'Content-Type': 'image/svg+xml',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0' # Expire immediately, so browser has to reverify everytime
+    }
+
+    return stream.getvalue(), headers
+
+#2FA 2-Factor page
+@main.route('/two-factor')
+def tfa():
+    if 'new_username' not in session:
+        return redirect(url_for('main.index'))
+
+    headers = {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0' # Expire immediately, so browser has to reverify everytime
+    }
+
+    return render_template('tfa.html'), headers
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
@@ -102,7 +145,7 @@ def course_page(class_id):
         # Get assignment and grade if recieved
         assignments = []
         for a in Assignment.objects(parent_class=load_class(class_id)):
-            if Grade.objects(student=load_user(current_user.username)) != None:
+            if Grade.objects(student=load_user(current_user.username), parent_assignment=a).count() != 0:
                 assignments.append((a, "Grade recieved"))
             else:
                 assignments.append((a, "Not yet graded"))
