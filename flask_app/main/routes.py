@@ -114,7 +114,14 @@ def login():
 
     form = LoginForm()
 
+    #login debugging
+    print(form.validate_on_submit())
+    print(form.username.errors)
+    print(form.email.errors)
+    print(form.password.errors)
+    print(form.token.errors)
     if form.validate_on_submit():
+        print("loading user")
         user = load_user(form.username.data)
 
         if user is not None and bcrypt.check_password_hash(user.password, form.password.data):
