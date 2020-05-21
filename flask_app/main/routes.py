@@ -50,16 +50,19 @@ def register():
         # 2FA
         session['new_username'] = form.username.data
         # sendgate email
-        sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
-        from_email = Email(os.environ.get('SENDGRID_USERNAME'))
-        subject = "Welcome to Easel Classroom"
-        to_email = Email(form.email.data)
-        content = Content("text/plain", "Thank you for joining easel-classroom. We hope our feature set facilitates greater teaching and learning!") 
-        mail = Mail(from_email, subject, to_email, content)
-        response = sg.client.mail.send.post(request_body=mail.get())
-        #print(response.status_code)
-        #print(response.body)
-        #print(response.headers)
+        message = Mail(
+                from_email=os.environ.get('SENDGRID_USERNAME'),
+                to_emails=form.email.data,
+                subject='Welcome to Easel Classroom',
+                html_content='<h3>Thank you for joining Easel Classroom. We hope our feature set facilitates greater teaching and learning!</h3>')
+        try:
+            sg = sendgrid.SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+            response=sg.send(message)
+            print(response.status_code) 
+            print(response.body)
+            print(response.headers)
+        except Exception as e:
+            print(e.message)
         #return redirect(url_for('main.login'))
         # redirect to 2fa
         return redirect(url_for('main.tfa'))
