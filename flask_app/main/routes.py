@@ -8,6 +8,10 @@ from werkzeug.utils import secure_filename
 from io import BytesIO
 import qrcode
 import qrcode.image.svg as svg
+# sendgrid emailing
+import sendgrid
+import os
+from sendgrid.helpers.mail import *
 
 # stdlib
 from datetime import datetime
@@ -45,6 +49,17 @@ def register():
         new_user.save()
         # 2FA
         session['new_username'] = form.username.data
+        # sendgate email
+        sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
+        from_email = Email(os.environ.get('SENDGRID_USERNAME'))
+        subject = "Welcome to Easel Classroom"
+        to_email = Email(form.email.data)
+        content = Content("text/plain", "Thank you for joining easel-classroom. We hope our feature set facilitates greater teaching and learning!") 
+        mail = Mail(from_email, subject, to_email, content)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        #print(response.status_code)
+        #print(response.body)
+        #print(response.headers)
         #return redirect(url_for('main.login'))
         # redirect to 2fa
         return redirect(url_for('main.tfa'))
