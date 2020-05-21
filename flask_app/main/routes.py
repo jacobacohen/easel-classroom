@@ -62,7 +62,7 @@ def register():
             print(response.body)
             print(response.headers)
         except Exception as e:
-            print(e.message)
+            print(e)
         #return redirect(url_for('main.login'))
         # redirect to 2fa
         return redirect(url_for('main.tfa'))
