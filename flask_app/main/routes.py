@@ -163,7 +163,8 @@ def course_page(class_id):
     unreads = len(Message.objects(recipients__in=[load_user(current_user.username)], classroom=load_class(class_id), unread=True))
     if current_user.user_type == "Teacher":
         # Featured content: Students enrolled, create assignment, assign grades, send message, inbox
-        return render_template('teacher-class.html', cur_class=cur_class, teaching=len(cur_class.students), unreads=unreads)
+        assignments = list(Assignment.objects(parent_class=load_class(class_id)))
+        return render_template('teacher-class.html', assignments=assignments, cur_class=cur_class, teaching=len(cur_class.students), unreads=unreads)
     # if student
     if current_user.user_type == "Student":
         # Featured content: View assignments, grades, Send a message
